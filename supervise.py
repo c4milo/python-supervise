@@ -97,7 +97,7 @@ DEFAULT_SERVICE_DIR = "/var/service"  # change for daemontools
 
 DEFAULT_SERVICE_DIR = os.getenv("SERVICE_DIR", DEFAULT_SERVICE_DIR)
 
-DEFAULT_EPOCH = 4611686018427387914L
+DEFAULT_EPOCH = 4611686018427387914
 
 STATUS_DOWN   = 0x00
 STATUS_UP     = 0x01
@@ -136,7 +136,7 @@ class ServiceStatus(object):
             an exception is raised.
         :param time: return a timestamp when last action performs.
         """
-        map(lambda x: setattr(self, x[0], x[1]), kwargs.items())
+        list(map(lambda x: setattr(self, x[0], x[1]), list(kwargs.items())))
 
     def _status2str(self, status):
         if status is None:
@@ -165,12 +165,12 @@ class ServiceStatus(object):
             return "got term"
 
     def __iter__(self):
-        for item in filter(lambda x: x[0]!='_', dir(self)):
+        for item in [x for x in dir(self) if x[0]!='_']:
             yield (item, getattr(self,item,None))
 
     def __str__(self):
         _d = dict()
-        for item in filter(lambda x: x[0]!='_', dir(self)):
+        for item in [x for x in dir(self) if x[0]!='_']:
             if item == "status":
                 _d["status"] = self._status2str(getattr(self,item,None))
             elif item == "action":
@@ -325,7 +325,7 @@ class Service(object):
         if pid and term:
             action = GOT_TERM
 
-        now = long(time.time()) + DEFAULT_EPOCH
+        now = int(time.time()) + DEFAULT_EPOCH
         seconds = 0 if now < seconds else (now - seconds)
 
         return ServiceStatus(status=status, pid=pid, action=action, uptime=seconds)
